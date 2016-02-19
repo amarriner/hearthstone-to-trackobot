@@ -25,8 +25,8 @@ Since I want to use the stats from an Android install of Hearthstone I need to g
 Inside my existing Dropbox account, I created a Hearthstone/logs directory with subdirectories for each device I want to automatically process. So, for example, for my phone there's a directory called Hearthstone/logs/S6 Edge. Then I use Dropsync to automatically upload the files in the /sdcard/Android/data/com.blizzard.wtcg.hearthstone/files/logs directory on my device to that directory on Dropbox. I set it up to *only* upload, not two-way sync.
 
 #### Some Problems With This
- + Sometimes Dropsync will send the Power.log file when it's not complete
- + It's not an immediate sync. Runs on a schedule and can affect your device's performance depending on how frequently you have it run
+ + Sometimes Dropsync will send the Power.log file when it's not complete. Generally this will just cause the upload script to error off, and should get picked back up when the full file syncs but this is still not ideal.
+ + It's not an immediate sync. Runs on a schedule and can affect your device's performance depending on how frequently you have it run. This can potentially cause you to lose a log if you stop Hearthstone and start it again before syncing occurs.
 
 Would love to find a better way to do this as this seems like the worst part. The other steps can use improvement, too, but this one feels like the hardest to streamline.
 
