@@ -1,6 +1,6 @@
 # hearthstone-to-trackobot
 
->Auto Upload Hearthstone Power Logs to trackobot.com
+>Auto Upload Android Hearthstone Power Logs to trackobot.com
 
 This is a hacky project to research uploading [Hearthstone](http://playhearthstone.com) games to [track-o-bot](https://trackobot.com) automatically after theyre played. Obviously track-o-bot does this for you if you're running it on a PC or a Mac, but I was hoping to get it working for Android.
 
