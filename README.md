@@ -43,7 +43,6 @@ To use [track-o-bot API](https://gist.github.com/stevschmid/120adcbc5f1f7cb31bc5
 
 #### Some Problems With This
  + There isn't a way to get whether a game is ranked, casual, tavern brawl, or arena from the Power.log so I'm defaulting to ranked because that's what I play most often.
- + I'm not currently parsing card plays to leverage track-o-bots auto deck identification, but this can definitely be done
  
 ---
  
