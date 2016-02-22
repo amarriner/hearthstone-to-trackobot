@@ -20,6 +20,7 @@ inotifywait -q --format "%w%f" -mr -e close . |
 
             $PYTHON $HSREPLAY "$DIR/Power_${TS}.log" > "$DIR/Power_${TS}.xml" 
             $HSPARSE "$DIR/Power_${TS}.xml" > ${LOGDIR}/hearthstone-parse.log
+            rm "$DIR/Power_${TS}.log" >> ${LOGDIR}/hearthstone-parse.log
          fi
       fi
    done
