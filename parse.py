@@ -6,10 +6,27 @@ from hearthstone import enums
 import datetime
 import json
 import keys
+import math
 import os
 import re
 import requests
 import sys
+
+CWD = os.path.dirname(__file__)
+
+# 
+# Load cached cards.json from https://api.hearthstonejson.com/v1/latest/enUS/cards.json
+#
+f = open(CWD + "/cards.json", "r")
+CARDS = json.loads(f.read())
+f.close
+
+#
+# Find a card by its ID
+#
+def get_card(id):
+   for c in filter(lambda card: card['id'] == id, CARDS):
+      return c
 
 if len(sys.argv) != 2:
    print ("Missing filename")
@@ -24,6 +41,8 @@ if not os.path.isfile(file):
 
 URL = "https://trackobot.com/profile/results.json?username=" + keys.username + "&token=" + keys.token
 
+ENTITIES = {}
+
 HEROES = {
    "HERO_01": "Warrior",
    "HERO_02": "Shaman",
@@ -36,6 +55,7 @@ HEROES = {
    "HERO_09": "Priest"
 }
 
+TURN = 1
 PLAYER = "amarriner"
 GAMES = []
 
@@ -49,10 +69,30 @@ games = soup.find_all("Game")
 for game in games:
 
    start_time = datetime.datetime.strptime(game.attrs["ts"], "%H:%M:%S.%f")
+
+   #
+   # Check to see if we've already done this timestamp
+   #
+   f = open(CWD + "/games", "r")
+   timestamps = f.read().split("\n")
+   f.close()
+
+   if game.attrs["ts"] in timestamps:
+      print ("Already processed this timstamp")
+      break
+
+   #
+   # If not, save it so we don't repeat it
+   #
+   f = open(CWD + "/games", "w")
+   f.write(game.attrs["ts"] + "\n")
+   f.close()
+
    GAMES.append({
       "player": {},
       "result": {
-         "mode": "ranked"
+         "mode": "ranked",
+         "card_history": []
       }
    })
 
@@ -66,6 +106,38 @@ for game in games:
             "name": player.attrs["name"],
             "playerID": player.attrs["playerID"]
       }
+
+   #
+   # Find entities, which are eventually cards played
+   #
+   for e in game.find_all("FullEntity"):
+      cID = ''
+      if 'cardID' in e.attrs.keys():
+         cID = e.attrs['cardID']
+
+      mana = 0
+      t = e.find('Tag', tag=48)
+      if t:
+         mana = int(t.attrs['value'])
+
+      who = 'opponent'
+      if e.find('Tag', tag=50).attrs['value'] == GAMES[-1]['player']['playerID']:
+         who = 'me'
+
+      ENTITIES[e.attrs['id']] = { 'player': who, 'card_id': cID, 'mana': mana }
+
+   #
+   # Populate entities that are filled out after game start 
+   #
+   for e in game.find_all("ShowEntity", cardID=re.compile(".*")):
+
+      mana = 0
+      t = e.find('Tag', tag=48)
+      if t:
+         mana = int(t.attrs['value'])
+
+      ENTITIES[e.attrs['entity']]['card_id'] = e.attrs['cardID']
+      ENTITIES[e.attrs['entity']]['mana'] = mana
 
    #
    # Determine hero for each player
@@ -102,15 +174,47 @@ for game in games:
       GAMES[-1]["result"]["win"] = False
 
    #
-   # Find end of game
+   # Loop through all actions
    #
-   for a in game.findAll("Action", entity=1):
-       tag = a.find("TagChange", tag=198, value=15)
-       if tag:
-          # 17:37:38.329882
-          end_time = datetime.datetime.strptime(tag.parent.attrs["ts"], "%H:%M:%S.%f")
-          GAMES[-1]["result"]["duration"] = (round((end_time - start_time).total_seconds()))
+   for a in game.findAll("Action"):
+       
+       #
+       # If this is the game entity
+       #
+       if int(a.attrs['entity']) == 1:
 
-   print (json.dumps({"result": GAMES[-1]["result"]}))
+          #
+          # Find end of game
+          #
+          tag = a.find("TagChange", tag=198, value=15)
+          if tag:
+             # 17:37:38.329882
+             end_time = datetime.datetime.strptime(tag.parent.attrs["ts"], "%H:%M:%S.%f")
+             GAMES[-1]["result"]["duration"] = (round((end_time - start_time).total_seconds()))
+
+          #
+          # Look for turn change
+          #
+          if a.find("TagChange", tag=20):
+             TURN = a.find("TagChange", tag=20).attrs['value']
+
+       #
+       # If this is not the game or either of the players
+       #
+       if int(a.attrs['entity']) > 3:
+
+          if int(TURN) > 1:
+
+             #
+             # Find played cards
+             #
+             t = a.find("TagChange", tag=261)
+             if t:
+                ENTITIES[a.attrs['entity']]['turn'] = math.ceil(int(TURN) / 2)
+                card = get_card(ENTITIES[a.attrs['entity']]['card_id'])
+                if card['type'] in ['WEAPON', 'MINION', 'SPELL'] and "turn" in ENTITIES[a.attrs['entity']].keys():
+                   GAMES[-1]["result"]["card_history"].append(ENTITIES[a.attrs['entity']])
+
    response = requests.post(URL, data=json.dumps({"result": GAMES[-1]["result"]}), headers={"content-type": "application/json"})
    print (response)
+
