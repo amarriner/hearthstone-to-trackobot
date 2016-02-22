@@ -5,6 +5,7 @@ BASE_DIR="${HOME}/Dropbox/Hearthstone/logs"
 PYTHON=${HOME}/.localpython-3.4.2/bin/python3.4
 HSREPLAY=${HOME}/python/HSReplay/python/convert.py
 HSPARSE=${HOME}/python/hearthstone-parse/parse.sh
+LOGDIR=${HOME}/logs/hearthstone-parse
 
 cd $BASE_DIR
 
@@ -17,8 +18,8 @@ inotifywait -q --format "%w%f" -mr -e close . |
             TS=`date +%Y%m%d%H%M%S`
             mv "$file" "$DIR/Power_${TS}.log"
 
-            $PYTHON $HSREPLAY "$DIR/Power_${TS}.log" > "$DIR/Power_${TS}.xml"
-            $HSPARSE "$DIR/Power_${TS}.xml"
+            $PYTHON $HSREPLAY "$DIR/Power_${TS}.log" > "$DIR/Power_${TS}.xml" 
+            $HSPARSE "$DIR/Power_${TS}.xml" > ${LOGDIR}/hearthstone-parse.log
          fi
       fi
    done
