@@ -20,13 +20,9 @@ In order to do anything with the game data from Hearthstone, first [follow these
 
 ## Sync the Log
 
-Since I want to use the stats from an Android install of Hearthstone I need to get the Power.log file off the device and onto something else I can work with more easily (since I'm no Android dev). You might choose something else for this step, but I used [Dropbox](https://dropbox.com) and [Dropsync](https://play.google.com/store/apps/details?id=com.ttxapps.dropsync).
+Since I want to use the stats from an Android install of Hearthstone I need to get the Power.log file off the device and onto something else I can work with more easily (since I'm no Android dev). You might choose something else for this step, but I used [Dropbox](https://dropbox.com) and [Tasker](https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm). I was using [Dropsync](https://play.google.com/store/apps/details?id=com.ttxapps.dropsync), but I think Tasker is a lot better.
 
-Inside my existing Dropbox account, I created a Hearthstone/logs directory with subdirectories for each device I want to automatically process. So, for example, for my phone there's a directory called Hearthstone/logs/S6 Edge. Then I use Dropsync to automatically upload the files in the /sdcard/Android/data/com.blizzard.wtcg.hearthstone/files/logs directory on my device to that directory on Dropbox. I set it up to *only* upload, not two-way sync.
-
-#### Some Problems With This
- + Sometimes Dropsync will send the Power.log file when it's not complete. Generally this will just cause the upload script to error off, and should get picked back up when the full file syncs but this is still not ideal.
- + It's not an immediate sync. Runs on a schedule and can affect your device's performance depending on how frequently you have it run. This can potentially cause you to lose a log if you stop Hearthstone and start it again before syncing occurs.
+I used [this reddit post](https://www.reddit.com/r/tasker/comments/3abjvv/how_to_upload_a_file_to_dropbox_in_the_background/) as an example of how to upload a file to Dropbox. I created that task and then a profile for when Hearthstone exits to fire that task off. This may or may not change depending on how it performs. Sometimes this causes the same log to be uploaded more than once because it's anytime you switch out of the Hearthstone app, not just when it closes. It can always be run manually, too.
 
 Would love to find a better way to do this as this seems like the worst part. The other steps can use improvement, too, but this one feels like the hardest to streamline.
 
