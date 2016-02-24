@@ -39,6 +39,13 @@ if not os.path.isfile(file):
    print ("No such file " + file)
    sys.exit(1)
 
+#
+# Open HSReplay formatted file
+#
+f = open(file, "r")
+xml = f.read()
+f.close()
+
 URL = "https://trackobot.com/profile/results.json?username=" + keys.username + "&token=" + keys.token
 
 ENTITIES = {}
@@ -62,12 +69,18 @@ TURN = 1
 PLAYER = "amarriner"
 GAMES = []
 
+#
+# Get the mode to send via the API (ranked, casual, etc)
+#
 f = open(CWD + "/mode", "r")
 mode = f.read().replace("\n","")
 f.close()
 
-f = open(file, "r")
-xml = f.read()
+#
+# Get the rank
+#
+f = open(CWD + "/rank", "r")
+rank = f.read().replace("\n","")
 f.close()
 
 soup = BeautifulSoup(xml, "xml")
@@ -249,6 +262,9 @@ for game in games:
              if a.attrs['entity'] in SECRETS.keys():
                 ENTITIES[a.attrs['entity']]['turn'] = math.ceil(int(TURN) / 2)
                 GAMES[-1]["result"]["card_history"].append(dict(ENTITIES[a.attrs['entity']]))
+
+   if mode == "ranked" and rank:
+      GAMES[-1]["result"]["rank"] = rank
 
    response = requests.post(URL, data=json.dumps({"result": GAMES[-1]["result"]}), headers={"content-type": "application/json"})
    print (response.status_code)
