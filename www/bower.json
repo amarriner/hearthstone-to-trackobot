@@ -1,0 +1,25 @@
+{
+  "name": "hs-parse",
+  "description": "Update hearthstone-parse mode",
+  "main": "server.js",
+  "authors": [
+    "Aaron Marriner (amarriner@amarriner.com)"
+  ],
+  "license": "MIT",
+  "moduleType": [],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "html5-boilerplate": "~5.3.0",
+    "bootstrap": "~3.3.6",
+    "jquery": "~2.2.1",
+    "font-awesome": "^4.5.0"
+  }
+}

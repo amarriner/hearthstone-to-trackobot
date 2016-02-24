@@ -2,3 +2,5 @@ __pycache__
 keys.py
 games
 mode
+www/node_modules
+www/static/bower_components

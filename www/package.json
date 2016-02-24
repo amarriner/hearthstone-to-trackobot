@@ -1,0 +1,16 @@
+{
+  "name": "hs-parse",
+  "version": "0.1.0",
+  "description": "Update hearthstone-parse mode",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Aaron Marriner (amarriner@amarriner.com)",
+  "license": "MIT",
+  "dependencies": {
+    "express": "~4.13.4",
+    "grunt-contrib-less": "~1.2.0",
+    "grunt": "~0.4.5"
+  }
+}
