@@ -45,19 +45,26 @@ ENTITIES = {}
 
 HEROES = {
    "HERO_01": "Warrior",
+   "HERO_01a": "Warrior",
    "HERO_02": "Shaman",
    "HERO_03": "Rogue",
    "HERO_04": "Paladin",
    "HERO_05": "Hunter",
+   "HERO_05a": "Hunter",
    "HERO_06": "Druid",
    "HERO_07": "Warlock",
    "HERO_08": "Mage",
+   "HERO_08a": "Mage",
    "HERO_09": "Priest"
 }
 
 TURN = 1
 PLAYER = "amarriner"
 GAMES = []
+
+f = open(CWD + "/mode", "r")
+mode = f.read().replace("\n","")
+f.close()
 
 f = open(file, "r")
 xml = f.read()
@@ -69,6 +76,8 @@ games = soup.find_all("Game")
 for game in games:
 
    start_time = datetime.datetime.strptime(game.attrs["ts"], "%H:%M:%S.%f")
+   HERO_POWERS = {}
+   SECRETS = {}
 
    #
    # Check to see if we've already done this timestamp
@@ -79,19 +88,19 @@ for game in games:
 
    if game.attrs["ts"] in timestamps:
       print ("Already processed this timstamp")
-      break
+      #break
 
    #
    # If not, save it so we don't repeat it
    #
-   f = open(CWD + "/games", "w")
+   f = open(CWD + "/games", "a")
    f.write(game.attrs["ts"] + "\n")
    f.close()
 
    GAMES.append({
       "player": {},
       "result": {
-         "mode": "ranked",
+         "mode": mode,
          "card_history": []
       }
    })
@@ -114,6 +123,10 @@ for game in games:
       cID = ''
       if 'cardID' in e.attrs.keys():
          cID = e.attrs['cardID']
+
+         card = get_card(cID);
+         if card['type'] == "HERO_POWER":
+            HERO_POWERS[e.attrs['id']] = card
 
       mana = 0
       t = e.find('Tag', tag=48)
@@ -140,9 +153,16 @@ for game in games:
       ENTITIES[e.attrs['entity']]['mana'] = mana
 
    #
+   # Find secrets: TagChange tag with a zone (49) of secret (7)
+   #
+   for t in game.find_all("TagChange", tag="49", value="7"):
+      if ENTITIES[t.attrs['entity']]['card_id']:
+         SECRETS[t.attrs['entity']] = get_card(ENTITIES[t.attrs['entity']]['card_id'])
+
+   #
    # Determine hero for each player
    #
-   for hero in game.find_all("FullEntity", cardID=re.compile("^HERO_[0-9][0-9]$")):
+   for hero in game.find_all("FullEntity", cardID=re.compile("^HERO_[0-9][0-9][a-zA-Z0-9]?$")):
       controller = hero.find("Tag", tag=50).attrs["value"]
       hero_str = hero.attrs["cardID"]
 
@@ -209,12 +229,30 @@ for game in games:
              # Find played cards
              #
              t = a.find("TagChange", tag=261)
-             if t:
+             if t and t.attrs['entity'] not in HERO_POWERS.keys():
                 ENTITIES[a.attrs['entity']]['turn'] = math.ceil(int(TURN) / 2)
                 card = get_card(ENTITIES[a.attrs['entity']]['card_id'])
                 if card['type'] in ['WEAPON', 'MINION', 'SPELL'] and "turn" in ENTITIES[a.attrs['entity']].keys():
                    GAMES[-1]["result"]["card_history"].append(ENTITIES[a.attrs['entity']])
 
-   response = requests.post(URL, data=json.dumps({"result": GAMES[-1]["result"]}), headers={"content-type": "application/json"})
-   print (response)
+             #
+             # Or if this is a hero power. Check to make sure Action is top level (right below Game). I think
+             # the type can be used, too, (PowSubType enum?)
+             #
+             if a.attrs['entity'] in HERO_POWERS.keys() and a.parent.name == 'Game':
+                ENTITIES[a.attrs['entity']]['turn'] = math.ceil(int(TURN) / 2)
+                GAMES[-1]["result"]["card_history"].append(ENTITIES[a.attrs['entity']])
+
+             #
+             # Or if a secret was revealed
+             #
+             if a.attrs['entity'] in SECRETS.keys():
+                ENTITIES[a.attrs['entity']]['turn'] = math.ceil(int(TURN) / 2)
+                GAMES[-1]["result"]["card_history"].append(ENTITIES[a.attrs['entity']])
+
+   for c in GAMES[-1]["result"]["card_history"]:
+      print (" --> " + str(c['turn']) + " :: " + c['card_id'])
+   #response = requests.post(URL, data=json.dumps({"result": GAMES[-1]["result"]}), headers={"content-type": "application/json"})
+   #print (response.status_code)
+   #print (response.text)
 
