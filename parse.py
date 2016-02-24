@@ -8,6 +8,7 @@ import json
 import keys
 import math
 import os
+import pytz
 import re
 import requests
 import sys
@@ -45,6 +46,17 @@ if not os.path.isfile(file):
 f = open(file, "r")
 xml = f.read()
 f.close()
+
+#
+# Get creation date of file for use in upload to API. Not perfect because the date
+# of the file may not always be the date of the game, but since the date is not 
+# in the log, this is a decent approximation. This also relies on the timezone set
+# below to be the same as the timezone the game was played in. Since the game may
+# or may not have been set on the same machine as the process is running that
+# might cause problems as well. Best to have all of them set to the same TZ.
+#
+TZ = pytz.timezone('US/Eastern')
+CTIME = datetime.date.fromtimestamp(os.path.getctime(file))
 
 URL = "https://trackobot.com/profile/results.json?username=" + keys.username + "&token=" + keys.token
 
@@ -89,6 +101,8 @@ games = soup.find_all("Game")
 for game in games:
 
    start_time = datetime.datetime.strptime(game.attrs["ts"], "%H:%M:%S.%f")
+   added = TZ.localize(datetime.datetime.strptime(CTIME.strftime("%Y-%m-%d") + " " + start_time.strftime("%H:%M:%S"), "%Y-%m-%d %H:%M:%S"))
+
    HERO_POWERS = {}
    SECRETS = {}
 
@@ -100,7 +114,7 @@ for game in games:
    f.close()
 
    if game.attrs["ts"] in timestamps:
-      print ("Already processed this timstamp")
+      print ("Already processed this timestamp")
       break
 
    #
@@ -113,6 +127,7 @@ for game in games:
    GAMES.append({
       "player": {},
       "result": {
+         "added": added.isoformat(),
          "mode": mode,
          "card_history": []
       }
