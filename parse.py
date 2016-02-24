@@ -88,7 +88,7 @@ for game in games:
 
    if game.attrs["ts"] in timestamps:
       print ("Already processed this timstamp")
-      #break
+      break
 
    #
    # If not, save it so we don't repeat it
@@ -230,10 +230,10 @@ for game in games:
              #
              t = a.find("TagChange", tag=261)
              if t and t.attrs['entity'] not in HERO_POWERS.keys():
-                ENTITIES[a.attrs['entity']]['turn'] = math.ceil(int(TURN) / 2)
                 card = get_card(ENTITIES[a.attrs['entity']]['card_id'])
-                if card['type'] in ['WEAPON', 'MINION', 'SPELL'] and "turn" in ENTITIES[a.attrs['entity']].keys():
-                   GAMES[-1]["result"]["card_history"].append(ENTITIES[a.attrs['entity']])
+                if card['type'] in ['WEAPON', 'MINION', 'SPELL']:
+                   ENTITIES[a.attrs['entity']]['turn'] = math.ceil(int(TURN) / 2)
+                   GAMES[-1]["result"]["card_history"].append(dict(ENTITIES[a.attrs['entity']]))
 
              #
              # Or if this is a hero power. Check to make sure Action is top level (right below Game). I think
@@ -241,18 +241,16 @@ for game in games:
              #
              if a.attrs['entity'] in HERO_POWERS.keys() and a.parent.name == 'Game':
                 ENTITIES[a.attrs['entity']]['turn'] = math.ceil(int(TURN) / 2)
-                GAMES[-1]["result"]["card_history"].append(ENTITIES[a.attrs['entity']])
+                GAMES[-1]["result"]["card_history"].append(dict(ENTITIES[a.attrs['entity']]))
 
              #
              # Or if a secret was revealed
              #
              if a.attrs['entity'] in SECRETS.keys():
                 ENTITIES[a.attrs['entity']]['turn'] = math.ceil(int(TURN) / 2)
-                GAMES[-1]["result"]["card_history"].append(ENTITIES[a.attrs['entity']])
+                GAMES[-1]["result"]["card_history"].append(dict(ENTITIES[a.attrs['entity']]))
 
-   for c in GAMES[-1]["result"]["card_history"]:
-      print (" --> " + str(c['turn']) + " :: " + c['card_id'])
-   #response = requests.post(URL, data=json.dumps({"result": GAMES[-1]["result"]}), headers={"content-type": "application/json"})
-   #print (response.status_code)
-   #print (response.text)
+   response = requests.post(URL, data=json.dumps({"result": GAMES[-1]["result"]}), headers={"content-type": "application/json"})
+   print (response.status_code)
+   print (response.text)
 
