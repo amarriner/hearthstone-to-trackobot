@@ -115,7 +115,7 @@ for game in games:
 
    if game.attrs["ts"] in timestamps:
       print ("Already processed this timestamp")
-      break
+      continue
 
    #
    # If not, save it so we don't repeat it
