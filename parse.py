@@ -295,6 +295,6 @@ for game in games:
 print ("Getting full history...")
 response = requests.get(HISTORY)
 
-f = open("history.csv", "w")
+f = open(CWD + "/history.csv", "w")
 f.write (response.text)
 f.close()
