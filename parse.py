@@ -97,9 +97,11 @@ f = open(CWD + "/rank", "r")
 rank = f.read().replace("\n","")
 f.close()
 
-soup = BeautifulSoup(xml, "xml")
+UPLOADED = False
 
+soup = BeautifulSoup(xml, "xml")
 games = soup.find_all("Game")
+
 for game in games:
 
    print("Processing game with timestamp " + game.attrs["ts"] + " ...")
@@ -289,12 +291,16 @@ for game in games:
    response = requests.post(URL, data=json.dumps({"result": GAMES[-1]["result"]}), headers={"content-type": "application/json"})
    print (response.status_code)
 
+   if response.status_code == 201:
+      UPLOADED = True
+
 #
 # Get full history as backup
 #
-print ("Getting full history...")
-response = requests.get(HISTORY)
+if UPLOADED:
+   print ("Getting full history...")
+   response = requests.get(HISTORY)
 
-f = open(CWD + "/history.csv", "w")
-f.write (response.text)
-f.close()
+   f = open(CWD + "/history.csv", "w")
+   f.write (response.text)
+   f.close()
