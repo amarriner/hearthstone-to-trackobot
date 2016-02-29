@@ -33,12 +33,13 @@ if len(sys.argv) != 2:
    print ("Missing filename")
    sys.exit(1)
 
-#file = "/home/amarriner/Dropbox/Hearthstone/logs/S6 Edge/Power_20160219145740.xml"
 file = sys.argv[1]
 
 if not os.path.isfile(file):
    print ("No such file " + file)
    sys.exit(1)
+
+print("Processing file " + file + " ...")
 
 #
 # Open HSReplay formatted file
@@ -59,6 +60,7 @@ TZ = pytz.timezone('US/Eastern')
 CTIME = datetime.date.fromtimestamp(os.path.getctime(file))
 
 URL = "https://trackobot.com/profile/results.json?username=" + keys.username + "&token=" + keys.token
+HISTORY = "https://trackobot.com/profile.csv?token=" + keys.token + "&username=" + keys.username
 
 ENTITIES = {}
 
@@ -99,6 +101,8 @@ soup = BeautifulSoup(xml, "xml")
 
 games = soup.find_all("Game")
 for game in games:
+
+   print("Processing game with timestamp " + game.attrs["ts"] + " ...")
 
    start_time = datetime.datetime.strptime(game.attrs["ts"], "%H:%M:%S.%f")
    added = TZ.localize(datetime.datetime.strptime(CTIME.strftime("%Y-%m-%d") + " " + start_time.strftime("%H:%M:%S"), "%Y-%m-%d %H:%M:%S"))
@@ -281,7 +285,16 @@ for game in games:
    if mode == "ranked" and rank:
       GAMES[-1]["result"]["rank"] = rank
 
+   print ("Uploading game...")
    response = requests.post(URL, data=json.dumps({"result": GAMES[-1]["result"]}), headers={"content-type": "application/json"})
    print (response.status_code)
-   print (response.text)
 
+#
+# Get full history as backup
+#
+print ("Getting full history...")
+response = requests.get(HISTORY)
+
+f = open("history.csv", "w")
+f.write (response.text)
+f.close()
