@@ -8,6 +8,16 @@ The good news: it works! I was able to get a log to flow through the sequence of
 
 The bad news: it only sorta works, is super kludgey and it takes **way** too many steps. Input is welcome.
 
+## Dependencies
+
+ + *(Android)* [Tasker](https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm)
+ + [Dropbox](https://dropbox.com)
+ + [Python 3+](https://www.python.org/downloads/)
+ + [python-hearthstone](https://github.com/HearthSim/python-hearthstone)
+ + [HSReplay](https://github.com/HearthSim/HSReplay)
+ + [BeautifulSoup](http://www.crummy.com/software/BeautifulSoup/) with an [XML Parser](http://lxml.de/)
+ + [track-o-bot](https://trackobot.com) account and API key
+
 ## Steps
 
  + [Enable Logging](#enable-logging)
@@ -28,9 +38,9 @@ Would love to find a better way to do this as this seems like the worst part. Th
 
 ## Parse the Log
 
-Once the log is uploaded to Dropbox, I can process it. I have the [Dropbox linux client](https://www.dropbox.com/install?os=lnx) installed and am syncing only the Hearthstone/logs/* directories. You can obviously sync whatever you want, but I didn't want everything synced to this machine.
+Once the log is uploaded to Dropbox, I can process it. I have the [Dropbox linux client](https://www.dropbox.com/install?os=lnx) installed and am syncing to the machine that will eventually parse the log.
 
-I created [a shell script](power_cycle.sh) that enables [inotify](https://en.wikipedia.org/wiki/Inotify) for the logs/* directories to watch for uploads of Power.log and process them:
+I created [a shell script](power_cycle.sh) that enables [inotify](https://en.wikipedia.org/wiki/Inotify) for the log directories to watch for uploads of Power.log and process them:
 
  + Renames the Power.log file to Power_%Y%m%d%H%M%S.log so that it's not accidentally overwritten
  + Runs the [Hearthsim python implementation of HSReplay](https://github.com/hearthsim/hsreplay) to convert the log to the [HSReplay XML Spec](http://hearthsim.info/hsreplay/). Not strictly necessary, but wanted to use the more formalized spec.
@@ -41,7 +51,7 @@ I created [a shell script](power_cycle.sh) that enables [inotify](https://en.wik
 To use [track-o-bot API](https://gist.github.com/stevschmid/120adcbc5f1f7cb31bc5), you need a username and an API key. Install the track-o-bot software on a PC or Mac, open your profile from that app and go to your [Settings->API](https://trackobot.com/profile/settings/api) page to get that data. I put it in a keys.py file in the same directory as the [parse.py](parse.py) file so that script can use them upon uploading.
 
 #### Some Problems With This
- + There isn't a way to get whether a game is ranked, casual, tavern brawl, or arena from the Power.log so I'm defaulting to ranked because that's what I play most often. Right now I have a tiny, bare bones frontend (in the [www](www) folder) to manually update my mode via a webpage. Again, kludgey but it works.
+ + There isn't a way to get whether a game is ranked, casual, tavern brawl, or arena from the Power.log so I'm defaulting to ranked because that's what I play most often. There is also no way to get your current rank. Right now I have a tiny, bare bones frontend (in the [www](www) folder) to manually update my mode and rank via a webpage. Again, kludgey but it works.
  
 ---
  
