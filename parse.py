@@ -70,6 +70,7 @@ HEROES = {
    "HERO_02": "Shaman",
    "HERO_03": "Rogue",
    "HERO_04": "Paladin",
+   "HERO_04a": "Paladin",
    "HERO_05": "Hunter",
    "HERO_05a": "Hunter",
    "HERO_06": "Druid",
