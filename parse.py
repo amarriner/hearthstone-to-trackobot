@@ -77,6 +77,7 @@ HEROES = {
    "HERO_07": "Warlock",
    "HERO_08": "Mage",
    "HERO_08a": "Mage",
+   "HERO_08b": "Mage",
    "HERO_09": "Priest"
 }
 
